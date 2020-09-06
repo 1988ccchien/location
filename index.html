@@ -18,7 +18,6 @@
 </body>
 <script>
     $('#cc').click(function(){
-        console.log('in');
         curl='https://gist.motc.gov.tw/gist_api/V3/Map/GeoCode/Coordinate/RoadClass/';
         curl+=$('#RoadClass').val();
         curl+='/RoadID/';
@@ -30,9 +29,13 @@
 		$.ajax({
 			url: curl,
 			success:function(data){
-				gps = data[0].Geometry.split(' ');
-				mapurl='https://www.google.com/maps/search/?api=1&query='+gps[2].replace(')','')+','+gps[1].replace('(','');
-				$('#show').empty().append('<a href="'+mapurl+'" target="_blank">開啟map</a>');
+				if(typeof data !== 'undefined' && data.length > 0){
+					gps = data[0].Geometry.split(' ');
+					mapurl='https://www.google.com/maps/search/?api=1&query='+gps[2].replace(')','')+','+gps[1].replace('(','');
+					$('#show').empty().append('<a href="'+mapurl+'" target="_blank">開啟map</a>');
+				}else{
+					$('#show').empty().append('查無此位置!!!');
+				}
 			},
 			error:function(){
 				alert('api 連接錯誤');
