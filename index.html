@@ -1,0 +1,79 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width = device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+道路等級:<select id='RoadClass' style="font :4em;">
+<option value="0">國道</option>
+<option value="1">省道快速公路</option>
+<option value="3">省道一般公路</option>
+<option value="4">市道、縣道</option>
+</select><br/>
+道路代碼:<select id='RoadID'></select><br/>
+里程:<input id="Mileage" type="text" placeholder="格式為xxx K+ xxx"><br/>
+<button id="cc">確認</button>
+<div id="show"></div>
+</body>
+<script>
+    $('#cc').click(function(){
+        console.log('in');
+        curl='https://gist.motc.gov.tw/gist_api/V3/Map/GeoCode/Coordinate/RoadClass/';
+        curl+=$('#RoadClass').val();
+        curl+='/RoadID/';
+        curl+=$('#RoadID').val();
+        curl+='/Mileage/';
+        Mileage=$('#Mileage').val();
+        curl+=encodeURIComponent(Mileage);
+        curl+='?$format=JSON';
+		$.ajax({
+			url: curl,
+			success:function(data){
+				gps = data[0].Geometry.split(' ');
+				mapurl='https://www.google.com/maps/search/?api=1&query='+gps[2].replace(')','')+','+gps[1].replace('(','');
+				$('#show').empty().append('<a href="'+mapurl+'" target="_blank">開啟map</a>');
+			},
+			error:function(){
+				alert('api 連接錯誤');
+			}
+		});
+    });
+    $( document ).ready(function() {
+		// 取得國道初始值
+		$.ajax({
+			url: 'https://gist.motc.gov.tw/gist_api/V3/Map/Basic/RoadClass/0/?$format=JSON',
+			success:function(data){
+				var rs = '';
+				data.forEach(function(item,index,array){
+					rs += '<option value="'+ item.RoadID+'">'+item.RoadName+'</option>';
+				});
+				$('#RoadID').append(rs);
+			},
+			error:function(){
+				alert('api 連接錯誤');
+			}
+		});
+
+		// 變更道路等級
+        $('#RoadClass').on('change',function(){
+			var getroadid = 'https://gist.motc.gov.tw/gist_api/V3/Map/Basic/RoadClass/';
+			getroadid += $('#RoadClass').val();
+			getroadid += '?$format=JSON';
+            $.ajax({
+                url: getroadid,
+                success:function(data){
+					var rs = '';
+					data.forEach(function(item,index,array){
+						rs += '<option value="'+ item.RoadID+'">'+item.RoadName+'</option>';
+					});
+					$('#RoadID').empty().append(rs);
+                },
+                error:function(){
+					alert('api 連接錯誤');
+                }
+   			});
+        });
+    });
+</script>
+</html>
